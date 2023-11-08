@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&family=Noto+Sans:wght@400;700&display=swap"rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <title>WriteingTest</title>
+    <style>
+        body {
+            background-color: #44546a;
+            color: white;
+            font-size: 200%;
+            margin: 40px;
+            font-family: 'Noto Sans', sans-serif;
+        }
+
+        .elm1 {
+            font-weight: 700;
+            margin: 40px 0;
+        }
+
+        .elm2 {
+            font-family: 'Noto Sans JP', sans-serif;
+            margin: 0;
+            padding: 40px 40px;
+            display: flex;
+            justify-content: center;
+            border: 1px solid white;
+        }
+
+        hr {
+            border-top: 1px solid white;
+        }
+
+        .elm3 {
+            margin: 0;
+            padding: 40px 40px;
+            display: flex;
+            justify-content: center;
+            border: 1px solid white;
+            border-top: none;
+        }
+
+        .elm4 {
+            display: flex;
+            justify-content: flex-end;
+            margin: 40px 0;
+            align-self: flex-start;
+            border: 1px solid white;
+        }
+
+        .elm5 {
+            margin: 40px 0;
+        }
+
+        .material-symbols-outlined {
+            font-size: 150%;
+        }
+
+        button{
+            padding: 0;
+            border: none;
+            outline: none;
+            font: inherit;
+            color: inherit;
+            background: none;
+            padding: 0 40px;
+            padding-top: 10px;
+        }
+
+        .cover {
+            color: #44546a;
+            background-image: linear-gradient(to right, white 100%, #44546a 100%);
+            background-size: 100% 1px;
+            background-position: bottom;
+            background-repeat: no-repeat;
+            padding-bottom: 0px;
+        }
+
+        .gtext {
+            background: linear-gradient(to right, white 0%, #44546a 0%);
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        textarea {
+            width: 100%;
+            resize: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="elm1">
+        <span style="border: solid 1px white; display: inline-block;">
+            <span id="qnum" style="background-color: white; color: #44546a; padding: 0 40px; font-size: 150%;">No.</span>
+            <span style="padding: 0 40px;">
+                <span id="qind" style="font-size: 150%;">Cur. </span>
+                <span id="qsum" style="font-weight: 400;">/ All</span>
+            </span>
+        </span>
+    </div>
+    <div class="elm2">
+        <span id="jptext">ここに和文が表示されます。</span>
+    </div>
+    <div class="elm3" id="helpwin">
+        <span id="entext">This is hint text.</span>
+    </div>
+    <div style="display: flex; justify-content: space-between;">
+        <div id="infoelm" class="elm5">
+            This is info text.
+        </div>
+        <div class="elm4">
+            <button type="button" onclick="switchhelp()">
+                <span class="material-symbols-outlined">help</span>
+            </button>
+            <button id="go" type="button" onclick="gobutton()" style="background-color: white; color:#44546a">
+                <span class="material-symbols-outlined">arrow_forward</span>
+            </button>
+            <div id="check" style="background-color: white; color: #44546a; display: none;">
+                <button type="button" onclick="incollect()">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+                <button type="button" onclick="gobutton()">
+                    <span class="material-symbols-outlined">check</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <textarea id="textarea" rows="10"></textarea>
+    <script>
+        var helping = true;
+        var helpwin = document.getElementById("helpwin");
+        function switchhelp() {
+            if (helping) {
+                helpwin.style.display = "none";
+            }
+            else {
+                helpwin.style.display = "flex";
+            }
+            helping = !helping;
+        }
+
+        var data = [];
+        var questionnumber = document.getElementById("qnum");
+        var questionindex = document.getElementById("qind");
+        var questionsum = document.getElementById("qsum");
+        var jptext = document.getElementById("jptext");
+        var entext = document.getElementById("entext");
+        var gobut = document.getElementById("go");
+        var check = document.getElementById("check");
+        var infoelm = document.getElementById("infoelm");
+        var state = -1;
+        var index = 0;
+        var remains = [];
+        var wrongs = [];
+        var covers = [];
+        var gtexts = [];
+        var now = new Date();
+        var lasttime = 0;
+        var animtime = 1;
+        var trycount = 1;
+        function easeOutExpo(t) {
+            if (t <= 0) {
+                return 0;
+            }
+            else if (t < 1) {
+                return 1 - 2 ** (-10 * t);
+            }
+            return 1;
+        }
+        function animin() {
+            now = new Date();
+            var eOE = 100 * easeOutExpo((now.getTime() - lasttime) * 0.001 / animtime);
+            for(var i = 0; i < covers.length; i++){
+                covers[i].style.backgroundImage = "linear-gradient(to right, white " + eOE + "%, #44546a " + eOE + "%)";
+            }
+            if (state == 1) {
+                if (now.getTime() - lasttime < 1000 * animtime) {
+                    requestAnimationFrame(animin);
+                }
+                else {
+                    for(var i = 0; i < covers.length; i++){
+                        covers[i].style.backgroundImage = "linear-gradient(to right, white 100%, #44546a 100%)";
+                    }
+                }
+            }
+        }
+        function animout() {
+            now = new Date();
+            var eOE = 100 * easeOutExpo((now.getTime() - lasttime) * 0.001 / animtime);
+            for(var i = 0; i < covers.length; i++){
+                covers[i].style.backgroundImage = "linear-gradient(to right, #44546a " + eOE + "%, white " + eOE + "%)";
+            }
+            for(var i = 0; i < gtexts.length; i++){
+                gtexts[i].style.background = "linear-gradient(to right, white " + eOE + "%, #44546a " + eOE + "%)";
+                gtexts[i].style.WebkitBackgroundClip = "text";
+            }
+            if (state == 0) {
+                if (now.getTime() - lasttime < 1000 * animtime) {
+                    requestAnimationFrame(animout);
+                }
+                else {
+                    for(var i = 0; i < covers.length; i++){
+                        covers[i].style.backgroundImage = "linear-gradient(to right, white 0%, #44546a 0%)";
+                    }
+                    for(var i = 0; i < gtexts.length; i++){
+                        gtexts[i].style.background = "linear-gradient(to right, white 100%, #44546a 100%)";
+                        gtexts[i].style.WebkitBackgroundClip = "text";
+                    }
+                }
+            }
+            else {
+                for(var i = 0; i < gtexts.length; i++){
+                    gtexts[i].style.background = "linear-gradient(to right, white 0%, #44546a 0%)";
+                    gtexts[i].style.WebkitBackgroundClip = "text";
+                }
+            }
+        }
+        function gobutton() {
+            if (state == -1) {
+                infoelm.textContent = "1st: ";
+                var textarea = document.getElementById("textarea");
+                var dataarr = textarea.value.split(/\n/);
+                var dataarr = dataarr.filter(n => n != "");
+                var ratz = /[a-z]/, rAtZ = /[A-Z]/, r0t9 = /[0-9]/;
+                function isalphabetornumber(strobj) {
+                    return ratz.test(strobj) || rAtZ.test(strobj) || r0t9.test(strobj) || strobj == "’";
+                }
+                function shaping(raw) {
+                    var findingFirstLetter = true;
+                    var beginning = false;
+                    var ret = "";
+                    for (var i = 0; i < raw.length; i++) {
+                        if (findingFirstLetter) {
+                            ret += raw[i];
+                            if (isalphabetornumber(raw[i])) {
+                                beginning = true;
+                                findingFirstLetter = false;
+                            }
+                        }
+                        else {
+                            if (isalphabetornumber(raw[i])) {
+                                if (beginning) {
+                                    ret += "<span class='cover'><span class='gtext'>";
+                                }
+                            }
+                            else {
+                                if (!beginning) {
+                                    ret += "</span></span>";
+                                }
+                                findingFirstLetter = true;
+                            }
+                            ret += raw[i];
+                            beginning = false;
+                        }
+                    }
+                    return ret;
+                }
+                data = [];
+                for (var i = 0; 3 * i < dataarr.length; i++) {
+                    data.push([dataarr[3 * i], dataarr[3 * i + 1], shaping(dataarr[3 * i+ 2])]);
+                }
+                textarea.style.display = "none";
+                state = 0;
+            }
+            if (state == 0) {
+                if (remains.length != 0 && remains.length == index) {
+                    if (wrongs.length == 0) {
+                        questionnumber.textContent = "No.";
+                        questionindex.textContent = "Cur.";
+                        questionsum.textContent = "/ All";
+                        jptext.textContent = "お疲れさまでした！";
+                        entext.innerHTML = "Good job!";
+                        state = 2;
+                        return;
+                    }
+                    else {
+                        var newdata = [];
+                        for (var i = 0; i < wrongs.length; i++) {
+                            newdata.push([...data[wrongs[i]]]);
+                        }
+                        data = Array.from(newdata);
+                        remains = [];
+                        wrongs = [];
+                        index = 0;
+                        function indicator (i) {
+                            i = Math.abs(i)
+                            var cent = i % 100
+                            if (cent >= 10 && cent <= 20) return 'th'
+                            var dec = i % 10
+                            if (dec === 1) return 'st'
+                            if (dec === 2) return 'nd'
+                            if (dec === 3) return 'rd'
+                            return 'th'
+                        }
+                        trycount++;
+                        infoelm.innerHTML += "<br>" + trycount + indicator(trycount) + ": "
+                    }
+                }
+                if (remains.length == 0) {
+                    remains = [...Array(data.length)].map((_, i) => i);
+                    for (i = remains.length; 1 < i; i--) {
+                        k = Math.floor(Math.random() * i);
+                        [remains[k], remains[i - 1]] = [remains[i - 1], remains[k]];
+                    }
+                }
+                questionnumber.textContent = data[remains[index]][0];
+                questionindex.textContent = String(index + 1);
+                questionsum.textContent = "/ " + String(data.length);
+                jptext.textContent = data[remains[index]][1];
+                entext.innerHTML = data[remains[index]][2];
+                covers = document.getElementsByClassName('cover');
+                gtexts = document.getElementsByClassName('gtext');
+                for(var i = 0; i < gtexts.length; i++){
+                    gtexts[i].style.background = "linear-gradient(to right, white 0%, #44546a 0%)";
+                    gtexts[i].style.WebkitBackgroundClip = "text";
+                }
+                state = 1;
+                now = new Date();
+                lasttime = now.getTime();
+                if (!helping) {
+                    helpwin.style.display = "none";
+                }
+                gobut.style.display = "inline-block";
+                check.style.display = "none";
+                animin();
+            }
+            else if (state == 1) {
+                state = 0;
+                index++;
+                now = new Date();
+                lasttime = now.getTime();
+                helpwin.style.display = "flex";
+                gobut.style.display = "none";
+                check.style.display = "inline-block";
+                animout();
+            }
+        }
+        function incollect() {
+            wrongs.push(remains[index - 1]);
+            infoelm.innerHTML += data[remains[index - 1]][0] + ", ";
+            gobutton();
+        }
+    </script>
+</body>
+
+</html>
