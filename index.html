@@ -108,7 +108,7 @@
         <span id="jptext">ここに和文が表示されます。</span>
     </div>
     <div class="elm3" id="helpwin">
-        <span id="entext">This is hint text.</span>
+        <span id="entext" style="text-align: justify;">This is hint text.</span>
     </div>
     <div style="display: flex; justify-content: space-between;">
         <div id="infoelm" class="elm5">
@@ -225,8 +225,12 @@
             if (state == -1) {
                 infoelm.textContent = "1st: ";
                 var textarea = document.getElementById("textarea");
-                var dataarr = textarea.value.split(/\n/);
-                var dataarr = dataarr.filter(n => n != "");
+                var dataarr = textarea.value.split(/\r?\n/);
+                var newdataarr = [];
+                for (var i = 0; 4 * i + 2 <= dataarr.length; i++) {
+                    newdataarr.push(dataarr[4 * i], dataarr[4 * i + 1], dataarr[4 * i + 2]);
+                }
+                dataarr = [...newdataarr];
                 var ratz = /[a-z]/, rAtZ = /[A-Z]/, r0t9 = /[0-9]/;
                 function isalphabetornumber(strobj) {
                     return ratz.test(strobj) || rAtZ.test(strobj) || r0t9.test(strobj) || strobj == "’";
@@ -342,9 +346,11 @@
             }
         }
         function incollect() {
-            wrongs.push(remains[index - 1]);
-            infoelm.innerHTML += data[remains[index - 1]][0] + ", ";
-            gobutton();
+            if (state == 0) {
+                wrongs.push(remains[index - 1]);
+                infoelm.innerHTML += data[remains[index - 1]][0] + ", ";
+                gobutton();
+            }
         }
     </script>
 </body>
