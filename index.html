@@ -13,7 +13,7 @@
         body {
             background-color: #44546a;
             color: white;
-            font-size: 200%;
+            font-size: 150%;
             margin: 40px;
             font-family: 'Noto Sans', sans-serif;
             font-variant-ligatures : none;
@@ -116,17 +116,19 @@
             This is info text.
         </div>
         <div class="elm4">
-            <button type="button" onclick="switchhelp()">
-                <span class="material-symbols-outlined">help</span>
-            </button>
-            <button id="go" type="button" onclick="gobutton()" style="background-color: white; color:#44546a">
-                <span class="material-symbols-outlined">arrow_forward</span>
-            </button>
-            <div id="check" style="background-color: white; color: #44546a; display: none;">
+            <div id="go" style="display: block;">
+                <button type="button" onclick="switchhelp()">
+                    <span class="material-symbols-outlined">help</span>
+                </button>
+                <button type="button" onclick="gobutton()" style="background-color: white; color:#44546a">
+                    <span class="material-symbols-outlined">arrow_forward</span>
+                </button>
+            </div>
+            <div id="check" style="display: none;">
                 <button type="button" onclick="incollect()">
                     <span class="material-symbols-outlined">close</span>
                 </button>
-                <button type="button" onclick="gobutton()">
+                <button type="button" onclick="gobutton()" style="background-color: white; color:#44546a">
                     <span class="material-symbols-outlined">check</span>
                 </button>
             </div>
@@ -163,25 +165,25 @@
         var gtexts = [];
         var now = new Date();
         var lasttime = 0;
-        var animtime = 1;
         var trycount = 1;
+        var inorder = false;
         function easeOutExpo(t) {
             if (t <= 0) {
                 return 0;
             }
             else if (t < 1) {
-                return 1 - 2 ** (-10 * t);
+                return 1 - 2 ** (-10 * t) + 2 ** -10 * (1 - (t - 1) * (t - 1));
             }
             return 1;
         }
         function animin() {
             now = new Date();
-            var eOE = 100 * easeOutExpo((now.getTime() - lasttime) * 0.001 / animtime);
+            var eOE = 100 * easeOutExpo((now.getTime() - lasttime) * 0.001);
             for(var i = 0; i < covers.length; i++){
                 covers[i].style.backgroundImage = "linear-gradient(to right, white " + eOE + "%, #44546a " + eOE + "%)";
             }
             if (state == 1) {
-                if (now.getTime() - lasttime < 1000 * animtime) {
+                if (now.getTime() - lasttime < 1000) {
                     requestAnimationFrame(animin);
                 }
                 else {
@@ -193,16 +195,14 @@
         }
         function animout() {
             now = new Date();
-            var eOE = 100 * easeOutExpo((now.getTime() - lasttime) * 0.001 / animtime);
             for(var i = 0; i < covers.length; i++){
+                var eOE = 100 * easeOutExpo((now.getTime() - lasttime) * 0.001 - 0.5 * i / (covers.length - 1));
                 covers[i].style.backgroundImage = "linear-gradient(to right, #44546a " + eOE + "%, white " + eOE + "%)";
-            }
-            for(var i = 0; i < gtexts.length; i++){
                 gtexts[i].style.background = "linear-gradient(to right, white " + eOE + "%, #44546a " + eOE + "%)";
                 gtexts[i].style.WebkitBackgroundClip = "text";
             }
             if (state == 0) {
-                if (now.getTime() - lasttime < 1000 * animtime) {
+                if (now.getTime() - lasttime < 1500) {
                     requestAnimationFrame(animout);
                 }
                 else {
@@ -227,6 +227,11 @@
                 infoelm.textContent = "1st: ";
                 var textarea = document.getElementById("textarea");
                 var dataarr = textarea.value.split(/\r?\n/);
+                if (dataarr[0].match(/(io|Io|IO)/)) {
+                    dataarr = dataarr.slice(1);
+                    inorder = true;
+                    console.log("hogehugapiyo");
+                }
                 var newdataarr = [];
                 for (var i = 0; 4 * i + 2 <= dataarr.length; i++) {
                     newdataarr.push(dataarr[4 * i], dataarr[4 * i + 1], dataarr[4 * i + 2]);
@@ -308,10 +313,15 @@
                     }
                 }
                 if (remains.length == 0) {
-                    remains = [...Array(data.length)].map((_, i) => i);
-                    for (i = remains.length; 1 < i; i--) {
-                        k = Math.floor(Math.random() * i);
-                        [remains[k], remains[i - 1]] = [remains[i - 1], remains[k]];
+                    if (inorder) {
+                        remains = [...Array(data.length)].map((_, i) => i);
+                    }
+                    else {
+                        remains = [...Array(data.length)].map((_, i) => i);
+                        for (i = remains.length; 1 < i; i--) {
+                            k = Math.floor(Math.random() * i);
+                            [remains[k], remains[i - 1]] = [remains[i - 1], remains[k]];
+                        }
                     }
                 }
                 questionnumber.textContent = data[remains[index]][0];
@@ -331,7 +341,7 @@
                 if (!helping) {
                     helpwin.style.display = "none";
                 }
-                gobut.style.display = "inline-block";
+                gobut.style.display = "block";
                 check.style.display = "none";
                 animin();
             }
@@ -342,7 +352,7 @@
                 lasttime = now.getTime();
                 helpwin.style.display = "flex";
                 gobut.style.display = "none";
-                check.style.display = "inline-block";
+                check.style.display = "block";
                 animout();
             }
         }
