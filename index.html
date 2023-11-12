@@ -167,12 +167,26 @@
         var lasttime = 0;
         var trycount = 1;
         var inorder = false;
+        function keyUp(e) {
+            if (e.key == "ArrowRight") {
+                gobutton();
+            }
+            else if (e.key == "ArrowLeft") {
+                if (state == 0) {
+                    incollect();
+                }
+                else {
+                    switchhelp();
+                }
+            }
+        }
+        document.addEventListener('keyup', keyUp);
         function easeOutExpo(t) {
             if (t <= 0) {
                 return 0;
             }
             else if (t < 1) {
-                return 1 - 2 ** (-10 * t) + 2 ** -10 * (1 - (t - 1) * (t - 1));
+                return 1 - 2 ** (-10 * t);
             }
             return 1;
         }
@@ -202,7 +216,7 @@
                 gtexts[i].style.WebkitBackgroundClip = "text";
             }
             if (state == 0) {
-                if (now.getTime() - lasttime < 1500) {
+                if (now.getTime() - lasttime < 2000) {
                     requestAnimationFrame(animout);
                 }
                 else {
